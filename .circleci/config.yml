@@ -22,7 +22,8 @@ jobs:
       - run:
           name: print world
           command: |
-            echo "world" 
+            echo "world"
+            echo My pipeline id is << pipeline.id >> and my git branch is << pipeline.git.branch >>
 
 workflows:
   # Name the workflow "welcome"
