@@ -11,7 +11,7 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - run: echo "hello" 
-      - run: echo hello $MY_NAME
+      - run: echo hello name is $MY_NAME
 
   print_world:
     docker:
