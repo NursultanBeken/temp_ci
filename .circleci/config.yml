@@ -15,10 +15,9 @@ jobs:
       - run:
           name: Ensure backend infrastructure exist
           command: |
-            aws cloudformation create-stack \
-            --stack-name udacity-stack \
-            --template-body file://template.yml  \
-            --capabilities "CAPABILITY_IAM" "CAPABILITY_NAMED_IAM"
+            aws cloudformation deploy \
+              --template-file template.yml \
+              --stack-name my-stack
 
 workflows:
   # Name the workflow "welcome"
