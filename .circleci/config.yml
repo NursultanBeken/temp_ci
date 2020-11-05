@@ -1,61 +1,29 @@
 # Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 # Use a package of configuration called an orb.
-commands:
-  print_pipeline_id:
-    description: "A very simple command for demonstration purposes"
-    steps:
-      - run: echo ${CIRCLE_WORKFLOW_ID}
-
 orbs:
   # Declare a dependency on the welcome-orb
   welcome: circleci/welcome-orb@0.4.1
-# Orchestrate or schedule a set of jobs
-jobs:
-  save_hello_world_output:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - run: echo "text to output here" > ~/output.txt 
-      - run: echo hello name is $MY_NAME
-      - persist_to_workspace:
-          root: ~/
-          paths: output.txt
-
-  print_output_file:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - attach_workspace:
-          at: ~/
-      - run: cat ~/output.txt    
+  aws-cli: circleci/aws-cli@0.1.18
   
-  my_job:
+# Orchestrate or schedule a set of jobs
+jobs:  
+  create_infrastructure:
     docker:
-      - image: circleci/node:13.8.0
+      - image: amazon/aws-cli
     steps:
-      - print_pipeline_id 
-
-  test_on_fail:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - run: return 1
-      - run: 
-          name: execute on fail
-          command: echo Hello Error!
-          when: on_fail
+      - run:
+          name: Ensure backend infrastructure exist
+          command: |
+            aws cloudformation create-stack \
+            --stack-name udacity-stack \
+            --template-body file://template.yml  \
+            --capabilities "CAPABILITY_IAM" "CAPABILITY_NAMED_IAM"
 
 workflows:
   # Name the workflow "welcome"
   welcome:
     # Run the welcome/run job in its own container
     jobs:
-      - welcome/run
-      - save_hello_world_output
-      - print_output_file:
-          requires: [save_hello_world_output]
-      - my_job
-      - test_on_fail:
-          requires: [save_hello_world_output, my_job]
+      - create_infrastructure
 
