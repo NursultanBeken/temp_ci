@@ -15,10 +15,17 @@ jobs:
       - run:
           name: Ensure backend infrastructure exist
           command: |
-            aws cloudformation deploy \
-              --template-file template.yml \
-              --stack-name my-stack
-
+            aws cloudformation create-stack \
+            --stack-name udacity-stack \
+            --template-body file://template.yml  \
+            --capabilities "CAPABILITY_IAM" "CAPABILITY_NAMED_IAM"
+      - run:
+          name: Diags
+          command: |
+            pwd
+            ls -la . ..
+            printenv
+          when: on_fail  
 workflows:
   # Name the workflow "welcome"
   welcome:
