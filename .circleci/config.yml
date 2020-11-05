@@ -18,7 +18,7 @@ jobs:
           command: |
             aws cloudformation create-stack \
             --stack-name udacity-stack \
-            --template-body file://template.yml  \
+            --template-body file://cfn_template.yml  \
             --capabilities "CAPABILITY_IAM" "CAPABILITY_NAMED_IAM"
       - run:
           name: Diags
@@ -45,13 +45,28 @@ jobs:
           root: ~/
           paths: inventory.ini
       - store_artifacts:
-          path: inventory.ini            
+          path: inventory.ini
+
+  configure_env:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["b7:13:2c:60:53:82:85:78:ec:0b:61:ce:5b:92:d0:01"]
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible
+      - run:
+          name: Configure server
+          command: |
+            ansible-playbook -i inventory.ini main.yml
+
 workflows:
   # Name the workflow "welcome"
   welcome:
     # Run the welcome/run job in its own container
     jobs:
-      - create_infrastructure
-      - create_inventory:
-          requires: [create_infrastructure]
+      - configure_env
 
