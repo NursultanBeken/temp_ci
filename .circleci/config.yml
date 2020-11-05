@@ -32,6 +32,7 @@ jobs:
     docker:
       - image: amazon/aws-cli
     steps: 
+      - run: yum install -y tar gzip
       - run: echo [all] > inventory.ini   
       - run:
           name: get ec2 instance details
