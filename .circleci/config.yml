@@ -37,11 +37,6 @@ jobs:
       - run: yum install -y tar gzip
       - run: echo [all] > ~/my-app/inventory.ini
       - run:
-          name: wait untill instance will be running
-          command: |
-            aws ec2 wait instance-running \
-            --filters "Name=tag:Project,Values=udacity"   
-      - run:
           name: get ec2 instance details
           command: |
             aws ec2 describe-instances \
@@ -86,11 +81,11 @@ workflows:
   my_workflow:
     # Run the welcome/run job in its own container
     jobs:
-      - create_infrastructure
+      #- create_infrastructure
       - create_inventory:
           requires: [create_infrastructure]
       - show_inventory:
           requires: [create_inventory]    
       # - configure_env:
-      #     requires: [create_inventory]
+      #     requires: [show_inventory]
 
