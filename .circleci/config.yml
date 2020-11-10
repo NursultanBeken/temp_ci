@@ -74,7 +74,8 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/my-app
-      - run: ec2_public_ip=$(sed -n '2p' ~/my-app/inventory.ini)
+      - run: ec2_public_ip=$(cat ~/my-app/inventory.ini | head -2 | tail -1)
+      - run: echo ${ec2_public_ip}
       - run: echo "http://${ec2_public_ip}:3000"
       - run:
           name: instal curl
@@ -97,9 +98,8 @@ workflows:
     # Run the welcome/run job in its own container
     jobs:
       #- create_infrastructure
-      - create_inventory
-      - configure_env:
-          requires: [create_inventory]
-      - smoke_test:
-          requires: [configure_env]
+      #- create_inventory
+      #- configure_env:
+      #    requires: [create_inventory]
+      - smoke_test
 
