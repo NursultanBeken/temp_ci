@@ -98,8 +98,9 @@ workflows:
     # Run the welcome/run job in its own container
     jobs:
       #- create_infrastructure
-      #- create_inventory
+      - create_inventory
       #- configure_env:
-      #    requires: [create_inventory]
-      - smoke_test
+          #requires: [create_inventory]
+      - smoke_test:
+          requires: [create_inventory]
 
