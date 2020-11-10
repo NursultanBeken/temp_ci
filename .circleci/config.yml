@@ -5,7 +5,17 @@ orbs:
   # Declare a dependency on the welcome-orb
   welcome: circleci/welcome-orb@0.4.1
   aws-cli: circleci/aws-cli@0.1.18
-  
+
+commands:
+  destroy_environment:
+    steps:
+      - run:
+          name: destroy cloduformation stack
+          command: |
+            aws cloudformation delete-stack \
+            --stack-name dev-${CIRCLE_WORKFLOW_ID}
+
+
 # Orchestrate or schedule a set of jobs
 jobs:  
   create_infrastructure:
@@ -18,7 +28,7 @@ jobs:
           name: Ensure backend infrastructure exist
           command: |
             aws cloudformation create-stack \
-            --stack-name udacity-stack \
+            --stack-name dev-${CIRCLE_WORKFLOW_ID} \
             --template-body file://cfn_template.yml  \
             --capabilities "CAPABILITY_IAM" "CAPABILITY_NAMED_IAM"
       - run:
@@ -67,7 +77,9 @@ jobs:
           name: Configure server
           command: |
             ansible-playbook -i ~/my-app/inventory.ini main.yml
-  
+      - destroy_environment
+        when: on_fail
+
   smoke_test:
     docker:
       - image: alpine:latest
@@ -89,17 +101,21 @@ jobs:
               echo "It worked!"
             else
               echo "It failed"
+              return 1
             fi
+      - destroy_environment
+        when: on_fail
 
 workflows:
   # Name the workflow "welcome"
   my_workflow:
     # Run the welcome/run job in its own container
     jobs:
-      #- create_infrastructure
-      - create_inventory
-      #- configure_env:
-          #requires: [create_inventory]
-      - smoke_test:
+      - create_infrastructure
+      - create_inventory:
+          requires: [create_infrastructure]
+      - configure_env:
           requires: [create_inventory]
+      - smoke_test:
+          requires: [configure_env]
 
