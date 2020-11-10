@@ -48,15 +48,7 @@ jobs:
           paths: inventory.ini
       - store_artifacts:
           path: inventory.ini
-
-  show_inventory:
-    docker:
-      - image: python:3.7-alpine3.11
-    steps:
-      - attach_workspace:
-          at: ~/my-app
-      - run: cat ~/my-app/inventory.ini          
-
+       
   configure_env:
     docker:
       - image: python:3.7-alpine3.11
@@ -65,8 +57,8 @@ jobs:
       - add_ssh_keys:
           fingerprints: ["b7:13:2c:60:53:82:85:78:ec:0b:61:ce:5b:92:d0:01"]
       - attach_workspace:
-          at: ~/
-      - run: cat ~/inventory.ini    
+          at: ~/my-app
+      - run: cat ~/my-app/inventory.ini    
       - run:
           name: Install dependencies
           command: |
@@ -74,7 +66,25 @@ jobs:
       - run:
           name: Configure server
           command: |
-            ansible-playbook -i inventory.ini main.yml
+            ansible-playbook -i ~/my-app/inventory.ini main.yml
+  
+  smoke_test:
+    docker:
+      - image: alpine:latest
+    steps:
+      - run:
+          name: instal curl
+          command: |
+            apk --no-cache add curl
+      - run:
+          name: curl URL
+          command: |
+            if curl -s --head "https://google.com" 
+            then
+              echo "It worked!"
+            else
+              echo "It failed"
+            fi
 
 workflows:
   # Name the workflow "welcome"
@@ -83,8 +93,8 @@ workflows:
     jobs:
       #- create_infrastructure
       - create_inventory
-      - show_inventory:
-          requires: [create_inventory]    
-      # - configure_env:
-      #     requires: [show_inventory]
+      - configure_env:
+          requires: [create_inventory]
+      - smoke_test:
+          requires: [configure_env]
 
