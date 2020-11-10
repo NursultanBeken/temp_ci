@@ -8,8 +8,7 @@ commands:
       - run:
           name: destroy cloduformation stack
           command: |
-            aws cloudformation delete-stack \
-            --stack-name dev-${CIRCLE_WORKFLOW_ID}
+            aws cloudformation delete-stack --stack-name dev-${CIRCLE_WORKFLOW_ID}
 
 
 # Orchestrate or schedule a set of jobs
@@ -73,8 +72,6 @@ jobs:
           name: Configure server
           command: |
             ansible-playbook -i ~/my-app/inventory.ini main.yml
-      - destroy_environment
-        when: on_fail
 
   smoke_test:
     docker:
@@ -99,8 +96,8 @@ jobs:
               echo "It failed"
               return 1
             fi
-      - destroy_environment:
-          when: on_fail
+      - destroy_environment
+        when: on_fail
 
 workflows:
   # Name the workflow "welcome"
