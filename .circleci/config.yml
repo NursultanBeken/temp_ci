@@ -74,12 +74,6 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/my-app
-      - run: cat ~/my-app/inventory.ini
-      - run: echo 'export MY_ENV_VAR=$(cat ~/my-app/inventory.ini | head -2 | tail -1)' >> $BASH_ENV
-      - run: 
-          command: |
-            source $BASH_ENV 
-            echo ${MY_ENV_VAR} 
       - run:
           name: instal curl
           command: |
@@ -87,7 +81,9 @@ jobs:
       - run:
           name: curl URL
           command: |
-            URL="http://52.205.173.216:3000"
+            echo 'export MY_ENV_VAR=$(cat ~/my-app/inventory.ini | head -2 | tail -1)' >> $BASH_ENV
+            source $BASH_ENV 
+            URL="http://${MY_ENV_VAR}:3000"
             if curl -s --head ${URL} 
             then
               echo "It worked!"
