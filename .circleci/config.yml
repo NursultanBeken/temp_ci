@@ -76,7 +76,10 @@ jobs:
           at: ~/my-app
       - run: cat ~/my-app/inventory.ini
       - run: echo 'export MY_ENV_VAR=$(cat ~/my-app/inventory.ini | head -2 | tail -1)' >> $BASH_ENV
-      - run: echo "http://${MY_ENV_VAR}:3000" 
+      - run: 
+          command: |
+            source $BASH_ENV 
+            echo ${MY_ENV_VAR} 
       - run:
           name: instal curl
           command: |
