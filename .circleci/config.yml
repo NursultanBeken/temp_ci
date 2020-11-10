@@ -72,6 +72,10 @@ jobs:
     docker:
       - image: alpine:latest
     steps:
+      - attach_workspace:
+        at: ~/my-app
+      - run: ec2_public_ip=$(sed -n '2p' ~/my-app/inventory.ini)
+      - run: echo "http://${ec2_public_ip}:3000"
       - run:
           name: instal curl
           command: |
@@ -79,7 +83,8 @@ jobs:
       - run:
           name: curl URL
           command: |
-            if curl -s --head "https://google.com" 
+            URL="http://${ec2_public_ip}:3000"
+            if curl -s --head ${URL} 
             then
               echo "It worked!"
             else
