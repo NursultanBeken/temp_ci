@@ -11,6 +11,7 @@ jobs:
   create_infrastructure:
     docker:
       - image: amazon/aws-cli
+    working_directory: ~/my-app  
     steps:
       - checkout
       - run:
@@ -33,19 +34,27 @@ jobs:
       - image: amazon/aws-cli
     steps: 
       - run: yum install -y tar gzip
-      - run: echo [all] > inventory.ini   
+      - run: echo [all] > ~/my-app/inventory.ini   
       - run:
           name: get ec2 instance details
           command: |
             aws ec2 describe-instances \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --filters "Name=tag:Project,Values=udacity" \
-            --output text >> inventory.ini   
+            --output text >> ~/my-app/inventory.ini   
       - persist_to_workspace:
-          root: ~/
+          root: ~/my-app
           paths: inventory.ini
       - store_artifacts:
           path: inventory.ini
+
+  show_inventory:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - attach_workspace:
+          at: ~/my-app
+      - run: cat ~/my-app/inventory.ini          
 
   configure_env:
     docker:
@@ -54,6 +63,9 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: ["b7:13:2c:60:53:82:85:78:ec:0b:61:ce:5b:92:d0:01"]
+      - attach_workspace:
+          at: ~/
+      - run: cat ~/inventory.ini    
       - run:
           name: Install dependencies
           command: |
@@ -65,8 +77,14 @@ jobs:
 
 workflows:
   # Name the workflow "welcome"
-  welcome:
+  my_workflow:
     # Run the welcome/run job in its own container
     jobs:
-      - configure_env
+      - create_infrastructure
+      - create_inventory:
+          requires: [create_infrastructure]
+      - show_inventory:
+          requires: [create_inventory]    
+      # - configure_env:
+      #     requires: [create_inventory]
 
