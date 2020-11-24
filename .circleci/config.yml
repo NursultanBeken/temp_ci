@@ -96,7 +96,6 @@ jobs:
               echo "It failed"
               return 1
             fi
-      - destroy_environment
 
 workflows:
   # Name the workflow "welcome"
